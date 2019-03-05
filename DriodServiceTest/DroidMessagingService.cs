@@ -30,12 +30,11 @@ namespace DroidServiceTest.Droid
         private bool _actionStopping;
         private int _publishCount = 1;
         private int DroidMessageAppId = 12345;
-
         private NotificationManager _notificationManager;
         private readonly List<string> _notificationMessages;
-        private DocumentManagementService _dms1 = new DocumentManagementService();
-        private DocumentManagementService _dms2 = new DocumentManagementService();
-        private DocumentManagementService _dms3 = new DocumentManagementService();
+        private DocumentManagementService _dms1;
+        private DocumentManagementService _dms2;
+        private DocumentManagementService _dms3;
 
         private void HandleAndroidException(object sender, RaiseThrowableEventArgs e)
         {
@@ -54,6 +53,10 @@ namespace DroidServiceTest.Droid
             AndroidEnvironment.UnhandledExceptionRaiser += HandleAndroidException;
 
             _notificationMessages = new List<string>();
+
+            _dms1 = new DocumentManagementService();
+            _dms2 = new DocumentManagementService();
+            _dms3 = new DocumentManagementService();
 
             Logger.Debug("Finished");
         }
@@ -93,10 +96,10 @@ namespace DroidServiceTest.Droid
 
                 // normally we have 2 or 3 of these service proxies classes running
                 // not sure if we need them to reproduced the issues.
-                //_dms2.StartWorker();
-                //_dms2.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
-                //_dms3.StartWorker();
-                //_dms3.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
+                _dms2.StartWorker();
+                _dms2.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
+                _dms3.StartWorker();
+                _dms3.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
 
                 Logger.Debug("Finished");
             }

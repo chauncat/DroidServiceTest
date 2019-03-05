@@ -30,7 +30,8 @@ namespace DroidServiceTest.Core.StoreAndForward
         private CancellationTokenSource _workerToken;
         private bool _disposed;
         private Task _workerProcTask;
-
+        private IPlatformService _platformService;
+        
         #endregion
 
         #region Public Methods
@@ -48,6 +49,7 @@ namespace DroidServiceTest.Core.StoreAndForward
             }
             CreateService = theDelegate;
             _retryTimeSpan = ts;
+            _platformService = Ioc.Container.Instance.Resolve<IPlatformService>();
         }
 
         public bool WorkerIsRunning => (_workerProcTask != null && _workerProcTask.Status == TaskStatus.Running);
@@ -637,7 +639,10 @@ namespace DroidServiceTest.Core.StoreAndForward
                 }
 
                 var timeToWait = Convert.ToInt32(_retryTimeSpan.TotalMilliseconds);
-                _logger.Debug($"Starting Wait Loop: timeToWait: {timeToWait} - Service Type: {serviceType}");
+                _logger.Debug($"^^^^ Starting Wait Loop: timeToWait: {timeToWait} - Service Type: {serviceType}");
+
+                _platformService.GetAvailableThreads(out var worker, out var completionPort);
+                _logger.Debug($"1.............  Managed Thread Id {Environment.CurrentManagedThreadId}, WorkThreads {worker}, CompletionPortThreads {completionPort},  - Service Type: {serviceType}");
 
                 while (timeToWait > 0)
                 {
@@ -651,6 +656,8 @@ namespace DroidServiceTest.Core.StoreAndForward
                     {
                         _logger.Debug($"Starting Wait: timeToWait: {timeToWait} Thread ID: {Task.CurrentId.GetValueOrDefault()}, Managed Thread Id {Environment.CurrentManagedThreadId} - Service Type: {serviceType}");
                         await Task.Delay(5000, token).ConfigureAwait(false);
+                        _platformService.GetAvailableThreads(out worker, out completionPort);
+                        _logger.Debug($"2.............  Managed Thread Id {Environment.CurrentManagedThreadId}, WorkThreads {worker}, CompletionPortThreads {completionPort},  - Service Type: {serviceType}");
                         _logger.Debug($"Finished Waiting: timeToWait: {timeToWait} Thread ID: {Task.CurrentId.GetValueOrDefault()}, Managed Thread Id {Environment.CurrentManagedThreadId} - Service Type: {serviceType}");
                         timeToWait -= 5000;
                     }
@@ -659,6 +666,9 @@ namespace DroidServiceTest.Core.StoreAndForward
                         break;
                     }
                 }
+
+                _platformService.GetAvailableThreads(out worker, out completionPort);
+                _logger.Debug($"3.............  Managed Thread Id {Environment.CurrentManagedThreadId}, WorkThreads {worker}, CompletionPortThreads {completionPort},  - Service Type: {serviceType}");
                 _logger.Debug($"Finished wait loop. Service Type: {serviceType}");
             }
 

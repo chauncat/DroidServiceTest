@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using Android.App;
 using Android.Media;
 using Android.OS;
@@ -38,6 +39,27 @@ namespace DroidServiceTest.Droid
                 Logger.Error("Error creating SQLiteConnection object: " + ex.Message, ex);
             }
             return null;
+        }
+
+        public void GetAvailableThreads(out int workerThreads, out int completionPortThreads)
+        {
+            Logger.Debug("Started");
+            workerThreads = 0;
+            completionPortThreads = 0;
+
+            try
+            {
+                Logger.Debug("Before GetAvailableThreads");
+                ThreadPool.GetAvailableThreads(out var worker, out var completionPort);
+                workerThreads = worker;
+                completionPortThreads = completionPort;
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Unable to get ");
+            }
+
+            Logger.Debug("Finihsed");
         }
 
         public virtual void ScanFile(string filePath)

@@ -12,5 +12,7 @@ namespace DroidServiceTest.Core
         /// <param name="dbName">The name of the database</param>
         /// <returns>A new SQLiteConnection object</returns>
         SQLiteConnection GetSqlConnection(string dbName);
+
+        void GetAvailableThreads(out int workerThreads, out int completionPortThreads);
     }
 }
