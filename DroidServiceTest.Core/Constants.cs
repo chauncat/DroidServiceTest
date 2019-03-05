@@ -11,5 +11,6 @@ namespace DroidServiceTest.Core
         public const string StartService = "START_SERVICE";
         public const string StopService = "STOP_SERVICE";
         public const string DroidMessagingIntent = "Droid.Messaging.Test.Intent";
+        public const string Publish = "PUBLISH";
     }
 }

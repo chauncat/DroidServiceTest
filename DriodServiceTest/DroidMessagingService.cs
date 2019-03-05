@@ -28,8 +28,7 @@ namespace DroidServiceTest.Droid
         private static object _lock = new object();
         private static object _stoppingLock = new object();
         private bool _actionStopping;
-        private Timer _timer;
-        private int _timerCount;
+        private int _publishCount = 1;
         private int DroidMessageAppId = 12345;
 
         private NotificationManager _notificationManager;
@@ -158,7 +157,6 @@ namespace DroidServiceTest.Droid
                 startedIntent.PutExtra(Constants.MessagingServiceAction, Constants.StartService);
                 SendBroadcast(startedIntent);
                 ActionStopping = false;
-                _timerCount = 0;
             }
 
             Logger.Debug("Finished");
@@ -218,33 +216,34 @@ namespace DroidServiceTest.Droid
 
                 switch (action)
                 {
-                    //case Constants.CreatePublisher:
-                    //    CreatePublisher(intent);
-                    //    break;
-                    //case Constants.CreateSubscriber:
-                    //    CreateSubscriber(intent);
-                    //    break;
-                    //case Constants.Publish:
-                    //    Publish(intent);
-                    //    break;
-                    //case Constants.ConfirmMessage:
-                    //    ConfirmMessage(intent);
-                    //    break;
-                    //case Constants.RemovePublisher:
-                    //    RemovePublisher(intent);
-                    //    break;
-                    //case Constants.RemoveSubscriber:
-                    //    RemoveSubscriber(intent);
-                    //    break;
-                    //case Constants.EndAllSession:
-                    //    EndAllSession();
-                    //    break;
-                    //case Constants.EndSessionByAppName:
-                    //    EndAllSessionByAppName(intent);
-                    //    break;
-                    //case Constants.CheckMessagingRunning:
-                    //    SendMessagingRunning();
-                    //    break;
+                    case Constants.Publish:
+                        Publish(intent);
+                        break;
+
+                        //case Constants.CreatePublisher:
+                        //    CreatePublisher(intent);
+                        //    break;
+                        //case Constants.CreateSubscriber:
+                        //    CreateSubscriber(intent);
+                        //    break;
+                        //case Constants.ConfirmMessage:
+                        //    ConfirmMessage(intent);
+                        //    break;
+                        //case Constants.RemovePublisher:
+                        //    RemovePublisher(intent);
+                        //    break;
+                        //case Constants.RemoveSubscriber:
+                        //    RemoveSubscriber(intent);
+                        //    break;
+                        //case Constants.EndAllSession:
+                        //    EndAllSession();
+                        //    break;
+                        //case Constants.EndSessionByAppName:
+                        //    EndAllSessionByAppName(intent);
+                        //    break;
+                        //case Constants.CheckMessagingRunning:
+                        //    SendMessagingRunning();
+                        //    break;
                 }
             }
             catch (Exception ex)
@@ -257,6 +256,22 @@ namespace DroidServiceTest.Droid
                 Monitor.Exit(_lock);
                 Logger.Debug("Finished exiting lock");
             }
+            Logger.Debug("Finished");
+        }
+
+        private void Publish(Intent intent)
+        {
+            Logger.Debug("Started");
+            try
+            {
+                SetContentOfMessagingNotification($"Received Publish Message #{_publishCount++}");
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error processing publish", e);
+                throw;
+            }
+
             Logger.Debug("Finished");
         }
 

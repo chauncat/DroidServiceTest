@@ -1,12 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+	android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <Button
-      android:id="@+id/start_service"
-      android:layout_width="fill_parent"
-      android:layout_height="wrap_content"
-      android:text="Start Service" />
-</RelativeLayout>
+        android:id="@+id/start_service"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start Service" />
+	<Button
+		android:id="@+id/message"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:text="Send Service a Message" />
+	<TextView
+        android:id="@+id/text"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:scrollbars="vertical"
+		android:maxLines="10" />
+</LinearLayout>

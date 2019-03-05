@@ -20,6 +20,7 @@ namespace DroidStarter.Droid
             // Set our view from the "main" layout resource
             SetContentView(Resource.Layout.activity_main);
 
+            var text = FindViewById<TextView>(Resource.Id.text);
             var button = FindViewById<Button>(Resource.Id.start_service);
 
             button.Click += delegate
@@ -34,6 +35,26 @@ namespace DroidStarter.Droid
 
                 Logger.Debug("Starting up DroidMessageService...");
 
+            };
+
+            var message = FindViewById<Button>(Resource.Id.message);
+
+            message.Click += delegate
+            {
+                if (IsMyServiceRunning(ServiceIntent))
+                {
+                    text.Text = "Service is not running";
+                    return;
+                }
+
+                //call service project intent
+                Logger.Debug("Started");
+
+                var intent = new Intent(Constants.DroidMessageBroadcastReceiver);
+                intent.PutExtra(Constants.Action, Constants.Publish);
+                Logger.Debug("Broadcasting intent");
+                Application.Context.ApplicationContext.SendBroadcast(intent);
+                Logger.Debug("Finished");
             };
         }
 
