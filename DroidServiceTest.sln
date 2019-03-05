@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DroidServiceTest.Droid", "D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DroidServiceTest.Core", "DroidServiceTest.Core\DroidServiceTest.Core.csproj", "{FFAA7F63-2C6B-4D11-A421-A5A6237B9D2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DroidStarter.Droid", "DroidStarter.Droid\DroidStarter.Droid.csproj", "{A6012FBC-8FE9-42A9-971B-5C97B9F04FFF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,12 @@ Global
 		{FFAA7F63-2C6B-4D11-A421-A5A6237B9D2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FFAA7F63-2C6B-4D11-A421-A5A6237B9D2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FFAA7F63-2C6B-4D11-A421-A5A6237B9D2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6012FBC-8FE9-42A9-971B-5C97B9F04FFF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6012FBC-8FE9-42A9-971B-5C97B9F04FFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6012FBC-8FE9-42A9-971B-5C97B9F04FFF}.Debug|Any CPU.Deploy.0 = Debug|Any CPU
+		{A6012FBC-8FE9-42A9-971B-5C97B9F04FFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6012FBC-8FE9-42A9-971B-5C97B9F04FFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6012FBC-8FE9-42A9-971B-5C97B9F04FFF}.Release|Any CPU.Deploy.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -34,6 +34,9 @@ namespace DroidServiceTest.Droid
 
         private NotificationManager _notificationManager;
         private readonly List<string> _notificationMessages;
+        private DocumentManagementService _dms1 = new DocumentManagementService();
+        private DocumentManagementService _dms2 = new DocumentManagementService();
+        private DocumentManagementService _dms3 = new DocumentManagementService();
 
         private void HandleAndroidException(object sender, RaiseThrowableEventArgs e)
         {
@@ -43,6 +46,11 @@ namespace DroidServiceTest.Droid
         public DroidMessageService()
         {
             Logger.Debug("Started");
+
+            DroidServiceTest.Core.Ioc.Container.Instance.Initialize(cc =>
+            {
+                cc.RegisterTypeAs<PlatformService, IPlatformService>(true);
+            });
 
             AndroidEnvironment.UnhandledExceptionRaiser += HandleAndroidException;
 
@@ -80,8 +88,16 @@ namespace DroidServiceTest.Droid
                 Logger.Debug("Starting up DroidMessageService...");
                 StartForeground(DroidMessageAppId, _msgNotificationBuilder.Build());
 
-                //Container.Instance.Resolve<IDocumentManagementService>().StartWorker();
-                //Container.Instance.Resolve<IDocumentManagementService>().ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
+
+                _dms1.StartWorker();
+                _dms1.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
+
+                // normally we have 2 or 3 of these service proxies classes running
+                // not sure if we need them to reproduced the issues.
+                //_dms2.StartWorker();
+                //_dms2.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
+                //_dms3.StartWorker();
+                //_dms3.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
 
                 Logger.Debug("Finished");
             }
@@ -91,6 +107,32 @@ namespace DroidServiceTest.Droid
                 throw;
             }
         }
+
+        private static void DMS_OnArchiveDocumentCompleted(object source, AsyncWebServiceResults results)
+        {
+            Logger.Debug("Started");
+
+            try
+            {
+                if (results != null && results.Success)
+                {
+                    Logger.Debug("Received Results that were success");
+                }
+                else
+                {
+                    Logger.Debug("Received Results that were not success");
+                }
+
+            }
+            catch (Exception e)
+            {
+                Logger.Error("Error processing Document Complete", e);
+                throw;
+            }
+
+            Logger.Debug("Finished");
+        }
+
 
         private bool ActionStopping
         {
