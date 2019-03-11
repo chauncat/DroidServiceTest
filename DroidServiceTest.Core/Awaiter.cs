@@ -5,12 +5,14 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using DroidServiceTest.Core.Logging;
+using DroidServiceTest.Core.Logging.Logger;
 
 namespace DroidServiceTest.Core
 {
     public class Awaiter
     {
-        private readonly ILogger _logger = new Logger();
+        private readonly ILogger _logger = LogFactory.Instance.GetLogger<Awaiter>();
         private readonly SemaphoreSlim _slim = new SemaphoreSlim(1);
         private SemaphoreSlim _pulseLock;
         private Task _wait;

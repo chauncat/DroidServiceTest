@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace DroidServiceTest.Core
 {
-    public class Logger : ILogger
+    public class MyLogger : IMyLogger
     {
         public void Trace(string message, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFile = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
@@ -20,7 +20,7 @@ namespace DroidServiceTest.Core
             LogMessage(message, "D", memberName, sourceFile, sourceLineNumber);
         }
 
-        void ILogger.Debug(string message, Exception exception, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFile = "", [CallerLineNumber] int sourceLineNumber = 0)
+        void IMyLogger.Debug(string message, Exception exception, [CallerMemberName] string memberName = "", [CallerFilePath] string sourceFile = "", [CallerLineNumber] int sourceLineNumber = 0)
         {
             LogMessage(message, "D", memberName, sourceFile, sourceLineNumber, exception);
         }
@@ -84,7 +84,7 @@ namespace DroidServiceTest.Core
         }
     }
 
-    public interface ILogger
+    public interface IMyLogger
     {
         void Trace(string message, [CallerMemberName] string memberName = "", [CallerFilePath]string sourceFile = "", [CallerLineNumber] int sourceLineNumber = 0);
         void Trace(string message, Exception exception, [CallerMemberName] string memberName = "", [CallerFilePath]string sourceFile = "", [CallerLineNumber] int sourceLineNumber = 0);

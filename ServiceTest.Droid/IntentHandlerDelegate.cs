@@ -1,6 +1,6 @@
 ﻿using Android.Content;
 
-namespace DroidServiceTest.Droid
+namespace ServiceTest.Droid
 {
     public delegate void IntentHandlerDelegate(Intent intent);
 }

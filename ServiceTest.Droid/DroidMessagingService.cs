@@ -5,22 +5,25 @@ using System.Linq;
 using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
 using Android.Support.V4.App;
 using DroidServiceTest.Core;
+using DroidServiceTest.Core.Logging;
+using DroidServiceTest.Core.Logging.Logger;
 
-namespace DroidServiceTest.Droid
+namespace ServiceTest.Droid
 {
-    [IntentFilter(new[] { "DriodServiceTest.Droid.DroidMessageService" })]
-    [Service(Name = "conway.messaging.droid.DroidMessageService")]
+    [IntentFilter(new[] { "ServiceTest.Droid.DroidMessageService" })]
+    [Service(Name = "servicetest.droid.droidmessageservice")]
     public class DroidMessageService : Service
     {
-        public const string IntentFilterName = "Conway.Messaging.Droid.DroidMessageService";
         public const int NotificationMaxMsgCount = 7;
-        private static readonly ILogger Logger = new Logger();
+        //private static readonly ILogger Logger = LogFactory.Instance.GetLogger<DroidMessageReceiver>();
+        private static readonly IMyLogger Logger = new MyLogger();
         private const string NotificationDisplayStartingUpTitle = "Messaging Service Starting Up";
         private const string NotificationDisplayTitle = "Messaging Service Started";
         private Notification.Builder _msgNotificationBuilder;
@@ -34,11 +37,22 @@ namespace DroidServiceTest.Droid
         private readonly List<string> _notificationMessages;
         private DocumentManagementService _dms1;
         private DocumentManagementService _dms2;
-        private DocumentManagementService _dms3;
+        private TwmTestService _twmTest1;
 
         private void HandleAndroidException(object sender, RaiseThrowableEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine("Unknown Error processing Service: " + e.Exception != null ? e.Exception.Message : "null message");
+            Logger.Error($"*** UNHANDLED ANDROID EXCEPTION OCCURRED ***{System.Environment.NewLine} {e?.Exception?.UnwindException() ?? "null message" }");
+        }
+
+        private void DomainOnUnhandledException(object sender, UnhandledExceptionEventArgs unhandledExceptionEventArgs)
+        {
+            var ex = unhandledExceptionEventArgs?.ExceptionObject as Exception;
+            Logger.Error($"*** UNHANDLED EXCEPTION OCCURRED *** {System.Environment.NewLine}, IsTerminating = {unhandledExceptionEventArgs != null && unhandledExceptionEventArgs.IsTerminating}, Error { ex?.UnwindException() ?? "null message" }");
+        }
+
+        private void TaskSchedulerOnUnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+        {
+            Logger.Error($"*** UNHANDLED TASK EXCEPTION OCCURRED ***{System.Environment.NewLine} {e?.Exception?.UnwindException() ?? "null message" }");
         }
 
         public DroidMessageService()
@@ -51,12 +65,14 @@ namespace DroidServiceTest.Droid
             });
 
             AndroidEnvironment.UnhandledExceptionRaiser += HandleAndroidException;
+            AppDomain.CurrentDomain.UnhandledException += DomainOnUnhandledException;
+            TaskScheduler.UnobservedTaskException += TaskSchedulerOnUnobservedTaskException;
 
             _notificationMessages = new List<string>();
 
             _dms1 = new DocumentManagementService();
             _dms2 = new DocumentManagementService();
-            _dms3 = new DocumentManagementService();
+            _twmTest1 = new TwmTestService();
 
             Logger.Debug("Finished");
         }
@@ -98,8 +114,7 @@ namespace DroidServiceTest.Droid
                 // not sure if we need them to reproduced the issues.
                 _dms2.StartWorker();
                 _dms2.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
-                _dms3.StartWorker();
-                _dms3.ArchiveDocumentCompleted += DMS_OnArchiveDocumentCompleted;
+                _twmTest1.StartWorker();
 
                 Logger.Debug("Finished");
             }
@@ -109,6 +124,8 @@ namespace DroidServiceTest.Droid
                 throw;
             }
         }
+
+
 
         private static void DMS_OnArchiveDocumentCompleted(object source, AsyncWebServiceResults results)
         {
@@ -170,7 +187,7 @@ namespace DroidServiceTest.Droid
         {
             try
             {
-                var notificationRedirectIntent = new Intent(IntentFilterName);
+                var notificationRedirectIntent = new Intent("ServiceTest.Droid.DroidMessageService");
 
                 var pendingIntent = PendingIntent.GetActivity(this, 0, notificationRedirectIntent, PendingIntentFlags.OneShot);
 
@@ -267,7 +284,20 @@ namespace DroidServiceTest.Droid
             Logger.Debug("Started");
             try
             {
-                SetContentOfMessagingNotification($"Received Publish Message #{_publishCount++}");
+                SetContentOfMessagingNotification($"Received Publish Message #{_publishCount}");
+
+                switch (_publishCount++)
+                {
+                    case 1:
+                        _dms1.CauseError();
+                        break;
+                    case 2:
+                        _dms2.CauseError();
+                        break;
+                    case 3:
+                        _twmTest1.CauseError();
+                        break;
+                }
             }
             catch (Exception e)
             {
@@ -295,15 +325,25 @@ namespace DroidServiceTest.Droid
 
         public override void OnDestroy()
         {
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+
             Logger.Debug("In OnDestroy of DroidMessageService");
-            //Container.Instance.Resolve<IDocumentManagementService>().ArchiveDocumentCompleted -= DMS_OnArchiveDocumentCompleted;
+            _dms1.ArchiveDocumentCompleted -= DMS_OnArchiveDocumentCompleted;
+            _dms1.Dispose();
+            
+            _dms2.ArchiveDocumentCompleted -= DMS_OnArchiveDocumentCompleted;
+            _dms2.Dispose();
+
+            _twmTest1.Dispose();
 
             base.OnDestroy();
 
             if (_receiver != null)
             {
                 Logger.Debug("Unregister Receiver");
-                UnregisterReceiver(_receiver);
+                Application.Context.UnregisterReceiver(_receiver);
+                //UnregisterReceiver(_receiver);
             }
 
             Logger.Debug("Finished");

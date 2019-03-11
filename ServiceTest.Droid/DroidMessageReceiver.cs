@@ -5,13 +5,15 @@ using System.Threading.Tasks;
 using Android.Content;
 using Android.App;
 using DroidServiceTest.Core;
+using DroidServiceTest.Core.Logging;
+using DroidServiceTest.Core.Logging.Logger;
 
-namespace DroidServiceTest.Droid
+namespace ServiceTest.Droid
 {
-    [IntentFilter(new[] { "DroidServiceTest.Droid.DroidMessageBroadcastReceiver" })]
+    [IntentFilter(new[] { "ServiceTest.Droid.DroidMessageBroadcastReceiver" })]
     class DroidMessageReceiver : BroadcastReceiver
     {
-        private readonly ILogger _logger = new Logger();
+        private readonly ILogger _logger = LogFactory.Instance.GetLogger<DroidMessageReceiver>();
         private readonly ConcurrentQueue<Intent> _jobs = new ConcurrentQueue<Intent>();
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly Awaiter _awaiter = new Awaiter();
@@ -121,7 +123,15 @@ namespace DroidServiceTest.Droid
 
             _logger.Debug($"Started: Client Session: {id} / Action: {action} / Jobs: {_jobs.Count}");
             _jobs.Enqueue(intent);
-            _awaiter.Pulse(); 
+            _awaiter.Pulse();
+
+            if (action == "cleanup")
+            {
+                _logger.Debug($"Calling GarabeCollector: {id} / Action: {action} / Jobs: {_jobs.Count}");
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+
             _logger.Debug($"Finished: Client Session: {id} / Action: {action} / Jobs: {_jobs.Count}");
         }
 

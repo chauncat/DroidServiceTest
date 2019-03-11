@@ -4,6 +4,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using DroidServiceTest.Core.Logging;
+using DroidServiceTest.Core.Logging.Logger;
 using DroidServiceTest.Core.StoreAndForward.Model;
 using Newtonsoft.Json;
 
@@ -25,13 +27,15 @@ namespace DroidServiceTest.Core.StoreAndForward
 
         #region Private Member Variables
 
-        private readonly ILogger _logger = new Logger();
+        private readonly ILogger _logger = LogFactory.Instance.GetLogger<ServiceProxy<T>>();
         private readonly TimeSpan _retryTimeSpan;
         private CancellationTokenSource _workerToken;
         private bool _disposed;
         private Task _workerProcTask;
         private IPlatformService _platformService;
-        
+        private int _servcieCount;
+        private static int _typeCount;
+
         #endregion
 
         #region Public Methods
@@ -50,9 +54,11 @@ namespace DroidServiceTest.Core.StoreAndForward
             CreateService = theDelegate;
             _retryTimeSpan = ts;
             _platformService = Ioc.Container.Instance.Resolve<IPlatformService>();
+            _typeCount++;
+            _servcieCount = _typeCount;
         }
 
-        public bool WorkerIsRunning => (_workerProcTask != null && _workerProcTask.Status == TaskStatus.Running);
+        public bool WorkerIsRunning => (_workerProcTask != null && !_workerProcTask.IsCompleted);
 
         /// <summary>
         /// Starts the task that will makes sure pending messages 
@@ -65,7 +71,7 @@ namespace DroidServiceTest.Core.StoreAndForward
             _logger.Debug("Starting worker thread: " + svc);
             try
             {
-                if (_workerProcTask == null || _workerProcTask.Status != TaskStatus.Running)
+                if (!WorkerIsRunning)
                 {
                     Task.Run(async () =>
                     {
@@ -101,10 +107,16 @@ namespace DroidServiceTest.Core.StoreAndForward
         /// <returns></returns>
         public void StopWorker()
         {
-            if (_workerToken == null) return;
+            _logger.Debug("Started");
+            if (_workerToken == null)
+            {
+                _logger.Debug("No Token Finished");
+                return;
+            }
 
             _workerToken.Cancel();
             _workerToken = null;
+            _logger.Debug("Finished");
         }
 
         /// <summary>
@@ -603,13 +615,19 @@ namespace DroidServiceTest.Core.StoreAndForward
             return serviceCalls;
         }
 
+        private bool _error = false;
+        public void CauseError()
+        {
+            _error = true;
+        }
+
         /// <summary>
         /// Worker task that will send pending messages.
         /// </summary>
         /// <param name="token"></param>
         private async Task WorkerProcAsync(CancellationToken token = default(CancellationToken))
         {
-            var serviceType = typeof(T).FullName;
+            var serviceType = $"{_servcieCount}. {typeof(T).FullName}";
             _logger.Debug($"Begin WorkerProc - Service Type: {serviceType}");
             while (true)
             {
@@ -627,6 +645,7 @@ namespace DroidServiceTest.Core.StoreAndForward
                 }
                 catch (OperationCanceledException)
                 {
+                    _logger.Debug("OperationCanceledException #2");
                     break;
                 }
                 catch (Exception ex)
@@ -652,6 +671,12 @@ namespace DroidServiceTest.Core.StoreAndForward
                         break;
                     }
 
+                    if (_error)
+                    {
+                        _logger.Debug("----------- Throwing Error --------------------");
+                        throw new Exception("Test Error");
+                    }
+
                     try
                     {
                         _logger.Debug($"Starting Wait: timeToWait: {timeToWait} Thread ID: {Task.CurrentId.GetValueOrDefault()}, Managed Thread Id {Environment.CurrentManagedThreadId} - Service Type: {serviceType}");
@@ -663,6 +688,7 @@ namespace DroidServiceTest.Core.StoreAndForward
                     }
                     catch (OperationCanceledException)
                     {
+                        _logger.Debug("OperationCanceledException #2");
                         break;
                     }
                 }
@@ -681,16 +707,21 @@ namespace DroidServiceTest.Core.StoreAndForward
 
         public void Dispose()
         {
+            _logger.Debug("Started");
             Dispose(true);
             GC.SuppressFinalize(this);
+            _logger.Debug("Finished");
         }
 
         private void Dispose(bool disposing)
         {
+            _logger.Debug("Started");
             if (!_disposed)
             {
+                _logger.Debug("Not Disposed");
                 if (disposing)
                 {
+                    _logger.Debug("Disposing");
                     StopWorker();
                     CreateService = null;
                     try
@@ -705,6 +736,8 @@ namespace DroidServiceTest.Core.StoreAndForward
                 }
                 _disposed = true;
             }
+
+            _logger.Debug("Finished");
         }
         #endregion
     }
@@ -715,7 +748,7 @@ namespace DroidServiceTest.Core.StoreAndForward
 
         static Util()
         {
-            Logger = new Logger();
+            Logger = LogFactory.Instance.GetLogger<Util>();
         }
         internal static Type[] GetTypes(Object[] items)
         {

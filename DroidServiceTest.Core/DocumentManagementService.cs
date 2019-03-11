@@ -1,22 +1,19 @@
 ﻿using System;
 using DroidServiceTest.Core.Ioc;
+using DroidServiceTest.Core.Logging;
+using DroidServiceTest.Core.Logging.Logger;
 using DroidServiceTest.Core.StoreAndForward;
 
 namespace DroidServiceTest.Core
 {
     public sealed class DocumentManagementService
     {
-        private static readonly ILogger Logger;
+        private static readonly ILogger Logger = LogFactory.Instance.GetLogger<DocumentManagementService>();
         private static readonly TimeSpan SnFRetryInterval = new TimeSpan(0, 0, 15);
         public event AsyncWebServiceOperationCompleted ArchiveDocumentCompleted;
         private readonly ServiceProxy<DocumentManagementServiceProxy> _proxy;
         private DocumentManagementServiceProxy _dms;
         private bool _disposed;
-
-        static DocumentManagementService()
-        {
-            Logger = new Logger();
-        }
 
         public DocumentManagementService()
         {
@@ -28,6 +25,11 @@ namespace DroidServiceTest.Core
         ~DocumentManagementService()
         {
             Dispose(false);
+        }
+
+        public void CauseError()
+        {
+            _proxy.CauseError();
         }
 
         #region DMS API implementation

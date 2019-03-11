@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using DroidServiceTest.Core.Ioc;
+using DroidServiceTest.Core.Logging;
+using DroidServiceTest.Core.Logging.Logger;
 using SQLite.Net;
 using SQLiteNetExtensions.Extensions;
 
@@ -20,7 +22,7 @@ namespace DroidServiceTest.Core.StoreAndForward.Model
 
         static Messages()
         {
-            Logger = new Logger();
+            Logger = LogFactory.Instance.GetLogger<Messages>();
         }
 
         private Messages()
@@ -655,7 +657,7 @@ namespace DroidServiceTest.Core.StoreAndForward.Model
 
         static SqLiteConnectionTraceListener()
         {
-            Logger = new Logger();
+            Logger = LogFactory.Instance.GetLogger<SqLiteConnectionTraceListener>();
         }
         public void Receive(string message)
         {

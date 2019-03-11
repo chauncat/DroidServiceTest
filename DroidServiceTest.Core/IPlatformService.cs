@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using DroidServiceTest.Core.Logging.Logger;
 using SQLite.Net;
 
 namespace DroidServiceTest.Core
@@ -14,5 +15,19 @@ namespace DroidServiceTest.Core
         SQLiteConnection GetSqlConnection(string dbName);
 
         void GetAvailableThreads(out int workerThreads, out int completionPortThreads);
+
+        Stream ConfigFile { get; }
+
+        string ExternalStoragePath { get; }
+
+        string SecondaryExternalStoragePath { get; }
+
+        ILogger PlatformLogger { get; }
+
+        void ScanFile(string filePath);
+
+        Stream ReadFile(string file);
+
+        bool FileExists(string file);
     }
 }

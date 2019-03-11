@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using DroidServiceTest.Core.Logging;
+using DroidServiceTest.Core.Logging.Logger;
 using Newtonsoft.Json;
 
 namespace DroidServiceTest.Core.StoreAndForward
@@ -9,7 +11,7 @@ namespace DroidServiceTest.Core.StoreAndForward
     {
         public delegate void ServiceCallComplete(Object src, ServiceProxyEventArgs args);
 
-        private readonly ILogger _logger = new Logger();
+        private readonly ILogger _logger = LogFactory.Instance.GetLogger<ServiceCall>();
 
         /// <summary>
         /// Object that will be used when invoking the call.
